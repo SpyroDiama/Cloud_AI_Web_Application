@@ -80,8 +80,8 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://your-droplet-ip",
+    "http://138.68.184.189:3000",
+    "http://138.68.184.189",
 ]
 
 LANGUAGE_CODE = 'en-us'
