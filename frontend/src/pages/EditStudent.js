@@ -1,30 +1,52 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 
-const AddStudent = () => {
+const EditStudent = () => {
     const [form, setForm] = useState({ name: '', study_hours: '', attendance: '', previous_grade: '' });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+    const { id } = useParams();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchStudent = async () => {
+            try {
+                const response = await axiosInstance.get(`students/${id}/`);
+                setForm(response.data);
+            } catch (err) {
+                setError('Failed to load student');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStudent();
+    }, [id]);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.post('students/create/', form);
+            await axiosInstance.put(`students/${id}/update/`, form);
             navigate('/dashboard');
         } catch (err) {
-            setError('Failed to add student. Please check your inputs.');
+            setError('Failed to update student.');
         }
     };
 
     const fields = [
-        { label: 'Full name', name: 'name', type: 'text', placeholder: 'e.g. John Doe', hint: null },
-        { label: 'Study hours per day', name: 'study_hours', type: 'number', placeholder: 'e.g. 6', hint: '1–10 hours' },
-        { label: 'Attendance', name: 'attendance', type: 'number', placeholder: 'e.g. 85', hint: 'Percentage (0–100)' },
-        { label: 'Previous grade', name: 'previous_grade', type: 'number', placeholder: 'e.g. 72', hint: 'Percentage (0–100)' },
+        { label: 'Full name', name: 'name', type: 'text', hint: null },
+        { label: 'Study hours per day', name: 'study_hours', type: 'number', hint: '1–10 hours' },
+        { label: 'Attendance', name: 'attendance', type: 'number', hint: 'Percentage (0–100)' },
+        { label: 'Previous grade', name: 'previous_grade', type: 'number', hint: 'Percentage (0–100)' },
     ];
+
+    if (loading) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <p className="text-gray-400 text-sm">Loading student...</p>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -34,8 +56,8 @@ const AddStudent = () => {
                 </button>
 
                 <div className="bg-white rounded-2xl border border-gray-200 p-8">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Add student</h1>
-                    <p className="text-gray-500 text-sm mb-6">Enter the student's details to generate a prediction</p>
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Edit student</h1>
+                    <p className="text-gray-500 text-sm mb-6">Update the student's details</p>
 
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-5">
@@ -55,7 +77,6 @@ const AddStudent = () => {
                                     name={field.name}
                                     value={form[field.name]}
                                     onChange={handleChange}
-                                    placeholder={field.placeholder}
                                     className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                                     required
                                 />
@@ -67,7 +88,7 @@ const AddStudent = () => {
                                 type="submit"
                                 className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                             >
-                                Add student
+                                Save changes
                             </button>
                             <button
                                 type="button"
@@ -84,4 +105,4 @@ const AddStudent = () => {
     );
 };
 
-export default AddStudent;
+export default EditStudent;

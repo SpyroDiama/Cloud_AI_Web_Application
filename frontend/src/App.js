@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AddStudent from './pages/AddStudent';
+import EditStudent from './pages/EditStudent';
 
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useContext(AuthContext);
@@ -23,6 +24,9 @@ function App() {
                     <Route path="/dashboard" element={
                         <PrivateRoute><Dashboard /></PrivateRoute>
                     } />
+                    <Route path="/students/edit/:id" element={
+    <PrivateRoute><EditStudent /></PrivateRoute>
+} />
                     <Route path="/students/add" element={
                         <PrivateRoute><AddStudent /></PrivateRoute>
                     } />
