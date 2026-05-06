@@ -20,3 +20,7 @@ frontend/build/
 
 # VS Code
 .vscode/
+
+#Ai model files
+backend/ai/model.pkl
+backend/ai/scaler.pkl

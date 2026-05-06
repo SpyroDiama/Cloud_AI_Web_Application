@@ -1,3 +1,8 @@
+import joblib
+import numpy as np
+import os
+
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -12,7 +17,7 @@ from .serializers import (
     PredictionSerializer
 )
 
-# ─── AUTH ───────────────────────────────────────────
+# AUTHENTICATION
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -48,7 +53,7 @@ def login_view(request):
     )
 
 
-# ─── STUDENTS CRUD ──────────────────────────────────
+# STUDENTS CRUD 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -116,7 +121,7 @@ def delete_student(request, pk):
     )
 
 
-# ─── AI PREDICTION PLACEHOLDER ──────────────────────
+# AI PREDICTION 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -128,9 +133,47 @@ def predict(request, pk):
             {'error': 'Student not found'},
             status=status.HTTP_404_NOT_FOUND
         )
-    # Placeholder - we will replace this with real AI in Phase 5
-    return Response({
-        'student': student.name,
-        'result': 'Pass',
-        'confidence': 0.85
-    })
+
+    try:
+        # Load model and scaler
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        model = joblib.load(os.path.join(base_dir, 'ai', 'model.pkl'))
+        scaler = joblib.load(os.path.join(base_dir, 'ai', 'scaler.pkl'))
+
+        # Prepare input data
+        features = np.array([[
+            student.study_hours,
+            student.attendance,
+            student.previous_grade
+        ]])
+
+        # Scale and predict
+        features_scaled = scaler.transform(features)
+        prediction = model.predict(features_scaled)[0]
+        confidence = model.predict_proba(features_scaled)[0].max()
+
+        result = 'Pass' if prediction == 1 else 'Fail'
+
+        # Save prediction to database
+        pred_obj, created = Prediction.objects.update_or_create(
+            student=student,
+            defaults={
+                'result': result,
+                'confidence': round(confidence, 2)
+            }
+        )
+
+        return Response({
+            'student': student.name,
+            'result': result,
+            'confidence': round(confidence * 100, 1),
+            'study_hours': student.study_hours,
+            'attendance': student.attendance,
+            'previous_grade': student.previous_grade,
+        })
+
+    except Exception as e:
+        return Response(
+            {'error': f'Prediction failed: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

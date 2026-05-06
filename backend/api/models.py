@@ -25,4 +25,4 @@ class Prediction(models.Model):
     def __str__(self):
         return f"{self.student.name} - {self.result}"
 
-# Create your models here.
+
