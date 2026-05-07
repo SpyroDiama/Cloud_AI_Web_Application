@@ -14,6 +14,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
+      restart: always
 
   backend:
     build: ./backend
@@ -35,6 +36,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        restart: always
 
   frontend:
     build: ./frontend
@@ -42,6 +44,8 @@ services:
       - "3000:80"
     depends_on:
       - backend
+      
+    restart: always
 
   nginx:
     build: ./nginx
@@ -50,6 +54,7 @@ services:
     depends_on:
       - backend
       - frontend
+    restart: always
 
 volumes:
   mysql_data:
