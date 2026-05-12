@@ -25,7 +25,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET_KEY=your-secret-key
+      - SECRET_KEY=uLIQoQquMmuWK8YSsyOtIvmIyEvn_ZcmQq1mDloM21gTCzzy2ArLHHmoueQN2Isasz8
       - DEBUG=False
       - DB_NAME=student_performance_predictor
       - DB_USER=root
